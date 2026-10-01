@@ -1,0 +1,48 @@
+- name: Install MicroCeph with S3 gateway (single node)
+  hosts: ceph
+  become: true
+  tasks:
+    - name: Install MicroCeph snap
+      community.general.snap:
+        name: microceph
+        state: present
+
+    - name: Hold automatic refreshes
+      ansible.builtin.command: snap refresh --hold microceph
+      changed_when: false
+
+    - name: Bootstrap cluster
+      ansible.builtin.command: microceph cluster bootstrap
+      register: bootstrap
+      failed_when: bootstrap.rc != 0 and 'already' not in bootstrap.stderr
+      changed_when: bootstrap.rc == 0
+
+    - name: Single-node pool settings
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - ceph config set global mon_allow_pool_size_one true
+        - ceph config set global osd_pool_default_size 1
+        - ceph config set osd osd_memory_target 1073741824
+      changed_when: false
+
+    - name: Add data disks
+      ansible.builtin.command: microceph disk add {{ item }} --wipe
+      loop: "{{ ceph_data_disks }}"
+      register: disk_add
+      failed_when: disk_add.rc != 0 and 'already' not in disk_add.stderr
+      changed_when: disk_add.rc == 0
+
+    - name: Enable RADOS Gateway (S3) on port 8080
+      ansible.builtin.command: microceph enable rgw --port 8080
+      register: rgw
+      failed_when: rgw.rc != 0 and 'already' not in rgw.stderr
+      changed_when: rgw.rc == 0
+
+    - name: Show cluster status
+      ansible.builtin.command: ceph -s
+      register: status
+      changed_when: false
+
+    - name: Print status
+      ansible.builtin.debug:
+        var: status.stdout_lines

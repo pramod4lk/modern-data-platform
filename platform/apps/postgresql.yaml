@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-system
+  source:
+    repoURL: https://github.com/<your-account>/data-platform-poc.git
+    targetRevision: main
+    path: platform/components/postgresql
+    directory:
+      recurse: true
+      exclude: '{*values*.yaml,README.md}'
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

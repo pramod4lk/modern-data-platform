@@ -1,0 +1,23 @@
+{
+  "catalogs": [
+    { "role": "platform-admin", "catalog": ".*", "allow": "all" },
+    { "role": "analyst|supervisor", "catalog": "iceberg", "allow": "read-only" }
+  ],
+  "tables": [
+    { "role": "platform-admin", "privileges": ["SELECT", "INSERT", "DELETE", "UPDATE", "OWNERSHIP"] },
+    {
+      "role": "analyst",
+      "schema": "gold",
+      "privileges": ["SELECT"],
+      "columns": [
+        { "name": "institution_name", "mask": "'***'" }
+      ]
+    },
+    {
+      "role": "supervisor",
+      "schema": "gold",
+      "privileges": ["SELECT"],
+      "filter": "institution_id IN ('FI001', 'FI002')"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+# Helm chart polaris from https://downloads.apache.org/incubator/polaris/helm-chart
+# targetRevision "*" takes the latest chart: pin it to a fixed version once the component works.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: polaris
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-system
+  sources:
+    - repoURL: https://downloads.apache.org/incubator/polaris/helm-chart
+      chart: polaris
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/platform/components/polaris/values.yaml
+    - repoURL: https://github.com/<your-account>/data-platform-poc.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

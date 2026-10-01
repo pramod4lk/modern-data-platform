@@ -1,0 +1,56 @@
+# Prepares every VM: updates, timezone, swap off, /etc/hosts, kernel settings for k3s.
+- name: Base OS preparation
+  hosts: all
+  become: true
+  tasks:
+    - name: Update and upgrade packages
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+
+    - name: Install common tools
+      ansible.builtin.apt:
+        name: [curl, jq, vim, htop, net-tools, chrony, python3-pip]
+        state: present
+
+    - name: Set timezone
+      community.general.timezone:
+        name: "{{ poc_timezone }}"
+
+    - name: Disable swap now
+      ansible.builtin.command: swapoff -a
+      changed_when: false
+
+    - name: Disable swap permanently
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*\sswap\s.*)$'
+        replace: '# \1'
+
+    - name: Add all POC hosts to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '\s{{ item }}$'
+        line: "{{ hostvars[item].ansible_host }} {{ item }}"
+      loop: "{{ groups['all'] }}"
+
+    - name: Kernel modules for Kubernetes networking
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+        persistent: present
+      loop: [br_netfilter, overlay]
+      when: inventory_hostname in groups['k3s']
+
+    - name: Sysctl for Kubernetes
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        sysctl_file: /etc/sysctl.d/99-k3s.conf
+      loop:
+        - { key: net.ipv4.ip_forward, value: "1" }
+        - { key: net.bridge.bridge-nf-call-iptables, value: "1" }
+        - { key: fs.inotify.max_user_instances, value: "8192" }
+        - { key: fs.inotify.max_user_watches, value: "524288" }
+        - { key: vm.max_map_count, value: "262144" }   # needed by OpenSearch (OpenMetadata)
+      when: inventory_hostname in groups['k3s']

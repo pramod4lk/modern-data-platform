@@ -1,0 +1,26 @@
+# Helm chart superset from https://apache.github.io/superset
+# targetRevision "*" takes the latest chart: pin it to a fixed version once the component works.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: superset
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bi
+  sources:
+    - repoURL: https://apache.github.io/superset
+      chart: superset
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/platform/components/superset/values.yaml
+    - repoURL: https://github.com/<your-account>/data-platform-poc.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

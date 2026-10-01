@@ -1,0 +1,5 @@
+institution_type,description
+COMMERCIAL_BANK,Licensed commercial bank (synthetic)
+ISLAMIC_BANK,Licensed Islamic bank (synthetic)
+INVESTMENT_BANK,Licensed investment bank (synthetic)
+DFI,Development financial institution (synthetic)

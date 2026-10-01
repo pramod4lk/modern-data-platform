@@ -1,0 +1,3 @@
+return_type,description,frequency,contract,mode
+LCR,Liquidity Coverage Ratio return (synthetic simplification),MONTHLY,lcr-monthly.v1,BATCH
+PAYMENTS,Payment system events (synthetic),CONTINUOUS,payments-events.v1,STREAMING

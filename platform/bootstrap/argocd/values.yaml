@@ -1,0 +1,25 @@
+# Argo CD for the POC: small footprint, no HA.
+global:
+  nodeSelector:
+    poc/role: services
+configs:
+  params:
+    server.insecure: true        # POC only: TLS terminated at ingress / port-forward
+dex:
+  enabled: false
+notifications:
+  enabled: false
+applicationSet:
+  replicas: 1
+controller:
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 1Gi }
+repoServer:
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 512Mi }
+server:
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 256Mi }

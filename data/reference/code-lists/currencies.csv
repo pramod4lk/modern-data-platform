@@ -1,0 +1,8 @@
+currency_code,currency_name,is_reporting_currency
+MYR,Malaysian Ringgit,true
+USD,US Dollar,false
+SGD,Singapore Dollar,false
+EUR,Euro,false
+GBP,Pound Sterling,false
+JPY,Japanese Yen,false
+CNY,Chinese Yuan Renminbi,false

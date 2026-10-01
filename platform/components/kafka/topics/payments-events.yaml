@@ -1,0 +1,25 @@
+# One topic per event type (not per institution); institution_id is the message key.
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: payments.events.v1
+  namespace: streaming
+  labels: { strimzi.io/cluster: poc-kafka }
+spec:
+  partitions: 6
+  replicas: 1
+  config:
+    retention.ms: 604800000        # 7 days
+    cleanup.policy: delete
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: payments.events.v1.dlq
+  namespace: streaming
+  labels: { strimzi.io/cluster: poc-kafka }
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: 2592000000       # 30 days

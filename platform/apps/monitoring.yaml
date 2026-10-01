@@ -1,0 +1,26 @@
+# Helm chart kube-prometheus-stack from https://prometheus-community.github.io/helm-charts
+# targetRevision "*" takes the latest chart: pin it to a fixed version once the component works.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/platform/components/monitoring/values.yaml
+    - repoURL: https://github.com/<your-account>/data-platform-poc.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

@@ -1,0 +1,6 @@
+# CloudNativePG operator
+nodeSelector:
+  kubernetes.io/hostname: k3s-server
+resources:
+  requests: { cpu: 50m, memory: 64Mi }
+  limits: { memory: 256Mi }

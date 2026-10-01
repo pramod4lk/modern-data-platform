@@ -1,0 +1,26 @@
+# Helm chart openmetadata from https://helm.open-metadata.org/
+# targetRevision "*" takes the latest chart: pin it to a fixed version once the component works.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openmetadata
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: governance
+  sources:
+    - repoURL: https://helm.open-metadata.org/
+      chart: openmetadata
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/platform/components/openmetadata/values.yaml
+    - repoURL: https://github.com/<your-account>/data-platform-poc.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

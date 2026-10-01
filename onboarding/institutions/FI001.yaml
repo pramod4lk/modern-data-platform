@@ -1,0 +1,24 @@
+institution_id: FI001
+institution_name: Synthetic Commercial Bank 01
+status: live
+supervising_department: prudential-supervision
+peer_group: PG-CB
+
+returns:
+  - return_type: LCR
+    contract: lcr-monthly.v1
+    channel: sftp
+    first_period: 2026-01
+
+streams:
+  - topic: payments.events.v1
+    key: FI001
+
+credentials:
+  sftp_account: fi001-sftp
+  client_certificate: fi001
+  kafka_user: fi001-producer
+
+contacts:
+  data_submission: submissions@fi001.example
+  escalation: compliance@fi001.example

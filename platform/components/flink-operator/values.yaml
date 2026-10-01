@@ -1,0 +1,11 @@
+# Flink Kubernetes Operator. Webhook disabled so cert-manager is not required in the POC.
+webhook:
+  create: false
+watchNamespaces:
+  - streaming
+operatorPod:
+  nodeSelector:
+    poc/role: services
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 512Mi }

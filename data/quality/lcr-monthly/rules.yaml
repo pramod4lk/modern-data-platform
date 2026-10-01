@@ -1,0 +1,54 @@
+# Quality rules as code for the LCR return. Results are stored in lakehouse.ops.dq_results
+# with rule id and version, so every published number can be traced to the rules it passed.
+# severity: blocking -> stop promotion / quarantine; warning -> record and notify the institution.
+contract: lcr-monthly
+version: 1.0.0
+rules:
+  - id: LCR-001
+    stage: bronze
+    dimension: completeness
+    type: not_null
+    columns: [institution_id, reporting_period, line_code, currency, amount]
+    severity: blocking
+  - id: LCR-002
+    stage: bronze
+    dimension: validity
+    type: accepted_values
+    column: line_code
+    values: [HQLA_L1, HQLA_L2A, HQLA_L2B, OUT_RETAIL, OUT_WHOLESALE, OUT_OTHER, IN_TOTAL]
+    severity: blocking
+  - id: LCR-003
+    stage: bronze
+    dimension: validity
+    type: accepted_values
+    column: currency
+    values: [MYR, USD, SGD, EUR, GBP, JPY, CNY]
+    severity: blocking
+  - id: LCR-004
+    stage: bronze
+    dimension: validity
+    type: range
+    column: amount
+    min: 0
+    severity: blocking
+  - id: LCR-005
+    stage: bronze
+    dimension: uniqueness
+    type: unique
+    columns: [institution_id, reporting_period, line_code, currency]
+    severity: blocking
+  - id: LCR-006
+    stage: bronze
+    dimension: completeness
+    type: aggregate_expression
+    description: All seven line codes are reported
+    expression: "count(distinct line_code) = 7"
+    severity: blocking
+  - id: LCR-101
+    stage: gold
+    dimension: accuracy
+    type: row_expression
+    description: LCR ratio is plausible (between 50% and 1000%)
+    expression: "lcr_ratio BETWEEN 0.5 AND 10"
+    severity: warning
+# Manifest reconciliation (row count and control total) runs in raw_to_bronze.py before these rules.

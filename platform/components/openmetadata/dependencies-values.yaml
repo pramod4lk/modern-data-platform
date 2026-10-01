@@ -1,0 +1,17 @@
+# OpenMetadata dependencies: only OpenSearch.
+# MySQL is replaced by the shared PostgreSQL; the bundled Airflow is disabled (our Airflow runs ingestion).
+mysql:
+  enabled: false
+airflow:
+  enabled: false
+opensearch:
+  enabled: true
+  singleNode: true
+  opensearchJavaOpts: "-Xms1g -Xmx1g"
+  resources:
+    requests: { cpu: 250m, memory: 2Gi }
+    limits: { memory: 2560Mi }
+  nodeSelector:
+    poc/role: services
+  persistence:
+    size: 10Gi

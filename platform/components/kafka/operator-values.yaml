@@ -1,0 +1,7 @@
+# Strimzi operator watches only the streaming namespace.
+watchNamespaces: []
+nodeSelector:
+  poc/role: services
+resources:
+  requests: { cpu: 100m, memory: 256Mi }
+  limits: { memory: 512Mi }

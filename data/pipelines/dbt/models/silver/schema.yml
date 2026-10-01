@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: silver_lcr_monthly
+    description: Current validated LCR lines per institution and period (one version only).
+    meta:
+      owner: liquidity-supervision
+      classification: confidential
+      contract: lcr-monthly.v1
+    columns:
+      - name: institution_id
+        tests: [not_null]
+      - name: reporting_period
+        tests: [not_null]
+      - name: line_code
+        tests:
+          - not_null
+          - accepted_values:
+              values: [HQLA_L1, HQLA_L2A, HQLA_L2B, OUT_RETAIL, OUT_WHOLESALE, OUT_OTHER, IN_TOTAL]
+      - name: amount
+        tests: [not_null]

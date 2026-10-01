@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: gold_lcr_by_institution
+    description: Certified-candidate LCR data product per institution and reporting period.
+    meta:
+      owner: liquidity-supervision
+      steward: liquidity-data-steward
+      classification: confidential
+      data_product: liquidity
+      freshness_sla: "4h after accepted submission"
+    columns:
+      - name: institution_id
+        tests: [not_null]
+      - name: reporting_period
+        tests: [not_null]
+      - name: lcr_ratio
+        description: Liquidity coverage ratio (1.0 = 100%)
+        tests: [not_null]

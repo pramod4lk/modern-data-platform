@@ -1,0 +1,45 @@
+# Single source of truth for the POC VMs.
+# This file is also an Ansible inventory:  ansible-inventory -i infra/inventory/hosts.yaml --graph
+# Replace the example IPs with addresses on your router's subnet, outside the DHCP range.
+all:
+  vars:
+    ansible_user: poc
+    ansible_python_interpreter: /usr/bin/python3
+    poc_gateway: 192.168.1.1
+    poc_dns: [192.168.1.1, 1.1.1.1]
+    poc_timezone: Asia/Kuala_Lumpur
+    k3s_server_ip: 192.168.1.201
+  children:
+    k3s_server:
+      hosts:
+        k3s-server:
+          ansible_host: 192.168.1.201
+          host_machine: linux-laptop
+          vcpu: 2
+          memory_gb: 3
+    k3s_agents:
+      hosts:
+        k3s-worker-1:
+          ansible_host: 192.168.1.202
+          host_machine: linux-laptop
+          node_role: compute
+          vcpu: 4
+          memory_gb: 6
+        k3s-worker-2:
+          ansible_host: 192.168.1.204
+          host_machine: windows-laptop
+          node_role: services
+          vcpu: 6
+          memory_gb: 24
+    ceph:
+      hosts:
+        ceph-1:
+          ansible_host: 192.168.1.203
+          host_machine: linux-laptop
+          ceph_data_disks: [/dev/vdb, /dev/vdc]
+          vcpu: 2
+          memory_gb: 3
+    k3s:
+      children:
+        k3s_server: {}
+        k3s_agents: {}

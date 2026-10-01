@@ -1,0 +1,33 @@
+# Run after k3s-server.yml in the same `make k3s` invocation, or pass -e k3s_token=<token>.
+- name: Fetch token from server
+  hosts: k3s_server
+  become: true
+  tasks:
+    - name: Read node token
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token_raw
+
+- name: Install k3s agents
+  hosts: k3s_agents
+  become: true
+  vars:
+    token: "{{ k3s_token | default(hostvars[groups['k3s_server'][0]].k3s_token_raw.content | b64decode | trim) }}"
+  tasks:
+    - name: Join the cluster
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | K3S_URL=https://{{ k3s_server_ip }}:6443 \
+          K3S_TOKEN={{ token }} INSTALL_K3S_EXEC="agent --node-ip {{ ansible_host }}" sh -
+      args:
+        creates: /usr/local/bin/k3s-agent-uninstall.sh
+      no_log: true
+
+- name: Label nodes
+  hosts: k3s_server
+  become: true
+  tasks:
+    - name: Apply role labels
+      ansible.builtin.command: >
+        k3s kubectl label node {{ item }} poc/role={{ hostvars[item].node_role }} --overwrite
+      loop: "{{ groups['k3s_agents'] }}"
+      changed_when: true

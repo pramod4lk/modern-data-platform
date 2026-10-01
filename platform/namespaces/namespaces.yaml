@@ -1,0 +1,32 @@
+# One namespace per platform area (mirrors the target design's domain separation).
+apiVersion: v1
+kind: Namespace
+metadata: { name: data-system, labels: { poc/area: shared-services } }    # PostgreSQL, Polaris, Apicurio
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: identity, labels: { poc/area: security } }              # Keycloak
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: lakehouse, labels: { poc/area: processing } }           # Spark jobs, Trino
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: streaming, labels: { poc/area: processing } }           # Kafka, Flink
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: orchestration, labels: { poc/area: processing } }       # Airflow
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: bi, labels: { poc/area: serving } }                     # Superset
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: governance, labels: { poc/area: governance } }          # OpenMetadata, Ranger
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: monitoring, labels: { poc/area: observability } }       # Prometheus, Grafana

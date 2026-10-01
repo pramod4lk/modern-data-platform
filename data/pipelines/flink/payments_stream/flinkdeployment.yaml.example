@@ -1,0 +1,34 @@
+# FlinkDeployment for the payments stream (rename to .yaml or kubectl apply by hand).
+# The image must contain: the Flink SQL runner jar, flink-sql-connector-kafka, iceberg-flink-runtime,
+# iceberg-aws-bundle, and the rendered job SQL. See README.md in this folder.
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: payments-stream
+  namespace: streaming
+spec:
+  image: <registry>/poc-flink:0.1.0
+  flinkVersion: v1_19
+  serviceAccount: flink
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+    state.checkpoints.dir: s3://lakehouse/flink/checkpoints/payments-stream
+    s3.endpoint: http://192.168.1.203:8080
+    s3.path.style.access: "true"
+  podTemplate:
+    spec:
+      nodeSelector: { poc/role: services }
+      containers:
+        - name: flink-main-container
+          envFrom:
+            - secretRef: { name: s3-credentials }
+            - secretRef: { name: polaris-engine }
+  jobManager:
+    resource: { memory: "1024m", cpu: 0.5 }
+  taskManager:
+    resource: { memory: "1536m", cpu: 1 }
+  job:
+    jarURI: local:///opt/flink/usrlib/sql-runner.jar
+    args: ["/opt/flink/usrlib/sql-scripts/payments_stream.sql"]
+    parallelism: 2
+    upgradeMode: savepoint

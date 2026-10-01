@@ -1,0 +1,8 @@
+line_code,line_description,category,weight
+HQLA_L1,Level 1 high-quality liquid assets,HQLA,1.00
+HQLA_L2A,Level 2A high-quality liquid assets,HQLA,0.85
+HQLA_L2B,Level 2B high-quality liquid assets,HQLA,0.50
+OUT_RETAIL,Retail deposit outflows (30 days),OUTFLOW,1.00
+OUT_WHOLESALE,Unsecured wholesale funding outflows (30 days),OUTFLOW,1.00
+OUT_OTHER,Other contractual outflows (30 days),OUTFLOW,1.00
+IN_TOTAL,Total contractual inflows (30 days),INFLOW,1.00

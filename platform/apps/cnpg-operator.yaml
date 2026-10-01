@@ -1,0 +1,26 @@
+# Helm chart cloudnative-pg from https://cloudnative-pg.github.io/charts
+# targetRevision "*" takes the latest chart: pin it to a fixed version once the component works.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cnpg-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-system
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cloudnative-pg
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/platform/components/postgresql/operator-values.yaml
+    - repoURL: https://github.com/<your-account>/data-platform-poc.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

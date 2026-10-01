@@ -1,0 +1,27 @@
+# The Flink operator chart is published per release: update the version in repoURL when upgrading.
+# Helm chart flink-kubernetes-operator from https://downloads.apache.org/flink/flink-kubernetes-operator-1.13.0/
+# targetRevision "*" takes the latest chart: pin it to a fixed version once the component works.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flink-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: streaming
+  sources:
+    - repoURL: https://downloads.apache.org/flink/flink-kubernetes-operator-1.13.0/
+      chart: flink-kubernetes-operator
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/platform/components/flink-operator/values.yaml
+    - repoURL: https://github.com/<your-account>/data-platform-poc.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

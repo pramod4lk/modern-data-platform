@@ -1,0 +1,31 @@
+# One small PostgreSQL instance shared by the platform services (POC only).
+# In the target design each service gets its own database and HA replicas.
+# Role passwords come from Secrets created by hand - see platform/secrets/README.md.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg
+  namespace: data-system
+spec:
+  instances: 1
+  storage:
+    size: 10Gi
+    storageClass: local-path
+  affinity:
+    nodeSelector:
+      kubernetes.io/hostname: k3s-server
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 768Mi }
+  postgresql:
+    parameters:
+      shared_buffers: 128MB
+      max_connections: "200"
+  managed:
+    roles:
+      - { name: polaris,      ensure: present, login: true, passwordSecret: { name: pg-polaris } }
+      - { name: keycloak,     ensure: present, login: true, passwordSecret: { name: pg-keycloak } }
+      - { name: airflow,      ensure: present, login: true, passwordSecret: { name: pg-airflow } }
+      - { name: superset,     ensure: present, login: true, passwordSecret: { name: pg-superset } }
+      - { name: openmetadata, ensure: present, login: true, passwordSecret: { name: pg-openmetadata } }
+      - { name: ledger,       ensure: present, login: true, passwordSecret: { name: pg-ledger } }

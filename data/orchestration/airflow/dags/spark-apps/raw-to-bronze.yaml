@@ -1,0 +1,36 @@
+# Rendered by Airflow (Jinja) for each run. Image: images/spark/Dockerfile.
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: raw-to-bronze-{{ params.submission_id | lower }}-{{ ts_nodash | lower }}
+  namespace: lakehouse
+spec:
+  type: Python
+  mode: cluster
+  image: <registry>/poc-spark:0.1.0
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: local:///opt/poc/pipelines/spark/raw_to_bronze.py
+  arguments:
+    - --raw-key
+    - "{{ params.raw_key }}"
+    - --submission-id
+    - "{{ params.submission_id }}"
+  sparkVersion: "3.5.6"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: 1g
+    serviceAccount: spark-operator-spark
+    nodeSelector: { poc/role: compute }
+    envFrom:
+      - secretRef: { name: s3-credentials }
+      - secretRef: { name: polaris-engine }
+  executor:
+    instances: 1
+    cores: 1
+    memory: 1500m
+    nodeSelector: { poc/role: compute }
+    envFrom:
+      - secretRef: { name: s3-credentials }
+      - secretRef: { name: polaris-engine }

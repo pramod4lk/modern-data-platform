@@ -1,0 +1,31 @@
+# One database per service (CloudNativePG Database resources).
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata: { name: polaris, namespace: data-system }
+spec: { cluster: { name: pg }, name: polaris, owner: polaris }
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata: { name: keycloak, namespace: data-system }
+spec: { cluster: { name: pg }, name: keycloak, owner: keycloak }
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata: { name: airflow, namespace: data-system }
+spec: { cluster: { name: pg }, name: airflow, owner: airflow }
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata: { name: superset, namespace: data-system }
+spec: { cluster: { name: pg }, name: superset, owner: superset }
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata: { name: openmetadata, namespace: data-system }
+spec: { cluster: { name: pg }, name: openmetadata, owner: openmetadata }
+---
+# Submission ledger (operational store for submission tracking)
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata: { name: ledger, namespace: data-system }
+spec: { cluster: { name: pg }, name: ledger, owner: ledger }

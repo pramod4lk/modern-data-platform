@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "PaymentEvent",
+  "namespace": "poc.payments.v1",
+  "fields": [
+    { "name": "event_id", "type": "string" },
+    { "name": "institution_id", "type": "string" },
+    { "name": "event_time", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "payment_system", "type": { "type": "enum", "name": "PaymentSystem", "symbols": ["RTGS", "INSTANT", "CARD", "CHEQUE"] } },
+    { "name": "direction", "type": { "type": "enum", "name": "Direction", "symbols": ["OUT", "IN"] } },
+    { "name": "amount", "type": "double" },
+    { "name": "currency", "type": "string" },
+    { "name": "status", "type": { "type": "enum", "name": "Status", "symbols": ["SETTLED", "PENDING", "FAILED"] } }
+  ]
+}

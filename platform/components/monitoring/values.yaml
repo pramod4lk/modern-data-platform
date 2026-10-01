@@ -1,0 +1,35 @@
+# kube-prometheus-stack, trimmed for the POC.
+alertmanager:
+  enabled: false
+prometheus:
+  prometheusSpec:
+    retention: 3d
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { memory: 1536Mi }
+    nodeSelector:
+      poc/role: services
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+grafana:
+  adminPassword: ""          # set via Secret "grafana-admin" in production-like setups
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  nodeSelector:
+    poc/role: services
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 384Mi }
+prometheusOperator:
+  nodeSelector:
+    poc/role: services
+kube-state-metrics:
+  nodeSelector:
+    poc/role: services
+# k3s embeds these components; disable scraping that would fail.
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }

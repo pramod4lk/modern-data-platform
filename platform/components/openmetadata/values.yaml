@@ -1,0 +1,28 @@
+# OpenMetadata server. Requires Secret "openmetadata-db" (key: password) in the governance namespace.
+openmetadata:
+  config:
+    database:
+      host: pg-rw.data-system.svc.cluster.local
+      port: 5432
+      driverClass: org.postgresql.Driver
+      dbScheme: postgresql
+      databaseName: openmetadata
+      auth:
+        username: openmetadata
+        password:
+          secretRef: openmetadata-db
+          secretKey: password
+    elasticsearch:
+      host: opensearch
+      searchType: opensearch
+      port: 9200
+      scheme: http
+    pipelineServiceClientConfig:
+      enabled: false        # ingestion runs from our Airflow / CLI instead
+    openlineage:
+      enabled: true          # receive lineage from Spark, Airflow, dbt
+nodeSelector:
+  poc/role: services
+resources:
+  requests: { cpu: 300m, memory: 1536Mi }
+  limits: { memory: 2Gi }

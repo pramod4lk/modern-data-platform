@@ -1,0 +1,61 @@
+# Data contract (Open Data Contract Standard style) for the synthetic monthly LCR return.
+# No pipeline may be built for a dataset before its contract exists.
+apiVersion: v3.0.0
+kind: DataContract
+id: lcr-monthly
+name: Liquidity Coverage Ratio - monthly return
+version: 1.0.0
+status: active
+domain: prudential-supervision
+dataProduct: liquidity
+description:
+  purpose: Monthly liquidity position of each reporting institution, used for LCR monitoring.
+  limitations: Synthetic, simplified template for the POC; not the official regulatory template.
+
+team:
+  - role: owner
+    name: Head of Liquidity Supervision (synthetic)
+  - role: steward
+    name: Liquidity data steward (synthetic)
+
+classification: confidential        # institution-level regulatory data
+retention:
+  raw: P10Y
+  bronze: P7Y
+  silver: P10Y
+  gold: P10Y
+
+submission:
+  frequency: monthly
+  deadline: "15 calendar days after period end"
+  channels: [sftp, api]
+  file:
+    format: csv
+    delimiter: ","
+    encoding: utf-8
+    header: true
+    name_pattern: "^FI[0-9]{3}_LCR_[0-9]{4}-[0-9]{2}_v[0-9]+\\.csv$"
+    manifest: required             # <file>.manifest.json with record_count, control_total, sha256
+
+schema:
+  - name: lcr_monthly
+    physicalType: table
+    properties:
+      - { name: institution_id,   logicalType: string, required: true, pattern: "^FI[0-9]{3}$", description: Reporting institution }
+      - { name: reporting_period, logicalType: string, required: true, pattern: "^[0-9]{4}-[0-9]{2}$", description: YYYY-MM }
+      - { name: line_code,        logicalType: string, required: true, codeList: reference/code-lists/lcr-line-codes.csv }
+      - { name: currency,         logicalType: string, required: true, codeList: reference/code-lists/currencies.csv }
+      - { name: amount,           logicalType: number, required: true, minimum: 0, description: Amount in thousands }
+
+quality:
+  rules: data/quality/lcr-monthly/rules.yaml
+
+sla:
+  freshness: "Gold available within 4 hours of accepted submission"
+  tier: 1
+
+storage:
+  raw: s3://raw/{institution_id}/LCR/{reporting_period}/
+  bronze: lakehouse.bronze.lcr_monthly
+  silver: lakehouse.silver.lcr_monthly
+  gold: lakehouse.gold.lcr_by_institution

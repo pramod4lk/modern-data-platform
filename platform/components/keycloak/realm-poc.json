@@ -1,0 +1,21 @@
+{
+  "realm": "poc",
+  "enabled": true,
+  "displayName": "Data Platform POC",
+  "roles": {
+    "realm": [
+      { "name": "platform-admin", "description": "Operates the platform" },
+      { "name": "data-engineer", "description": "Builds pipelines" },
+      { "name": "analyst", "description": "Queries Silver/Gold data" },
+      { "name": "supervisor", "description": "Reads Gold data for assigned institutions" }
+    ]
+  },
+  "clients": [
+    { "clientId": "superset", "protocol": "openid-connect", "publicClient": false,
+      "redirectUris": ["http://superset.poc.local/*"], "standardFlowEnabled": true },
+    { "clientId": "airflow", "protocol": "openid-connect", "publicClient": false,
+      "redirectUris": ["http://airflow.poc.local/*"], "standardFlowEnabled": true },
+    { "clientId": "openmetadata", "protocol": "openid-connect", "publicClient": true,
+      "redirectUris": ["http://openmetadata.poc.local/*"], "standardFlowEnabled": true }
+  ]
+}

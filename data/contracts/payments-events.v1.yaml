@@ -1,0 +1,31 @@
+apiVersion: v3.0.0
+kind: DataContract
+id: payments-events
+name: Payment system events
+version: 1.0.0
+status: active
+domain: payments-oversight
+dataProduct: payments
+description:
+  purpose: Near-real-time monitoring of payment volumes, values and failures.
+  limitations: Synthetic events for the POC.
+team:
+  - role: owner
+    name: Head of Payments Oversight (synthetic)
+classification: confidential
+submission:
+  channel: kafka
+  topic: payments.events.v1
+  dlq: payments.events.v1.dlq
+  key: institution_id
+  format: json               # Avro schema registered in Apicurio for the target design
+  schema: data/contracts/schemas/payments-event.v1.avsc
+delivery:
+  guarantee: at-least-once from producer; deduplicated on event_id within 10 minutes
+  lateness: events up to 5 minutes late are accepted
+quality:
+  rules: data/quality/payments-events/rules.yaml
+sla:
+  latency_p95: "60s from produce to Iceberg"
+storage:
+  bronze: lakehouse.bronze.payment_events

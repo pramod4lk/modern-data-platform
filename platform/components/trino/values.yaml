@@ -1,0 +1,42 @@
+# Trino: 1 coordinator + 1 worker on the compute node.
+server:
+  workers: 1
+  config:
+    query:
+      maxMemory: "2GB"
+coordinator:
+  jvm:
+    maxHeapSize: "1536M"
+  resources:
+    requests: { cpu: 500m, memory: 2Gi }
+    limits: { memory: 2Gi }
+  nodeSelector:
+    poc/role: compute
+worker:
+  jvm:
+    maxHeapSize: "2560M"
+  resources:
+    requests: { cpu: 1, memory: 3Gi }
+    limits: { memory: 3Gi }
+  nodeSelector:
+    poc/role: compute
+envFrom:
+  - secretRef: { name: s3-credentials }        # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+  - secretRef: { name: polaris-engine }        # POLARIS_CLIENT_ID / POLARIS_CLIENT_SECRET
+catalogs:
+  iceberg: |
+    connector.name=iceberg
+    iceberg.catalog.type=rest
+    iceberg.rest-catalog.uri=http://polaris.data-system.svc.cluster.local:8181/api/catalog
+    iceberg.rest-catalog.warehouse=lakehouse
+    iceberg.rest-catalog.security=OAUTH2
+    iceberg.rest-catalog.oauth2.credential=${ENV:POLARIS_CLIENT_ID}:${ENV:POLARIS_CLIENT_SECRET}
+    iceberg.rest-catalog.oauth2.scope=PRINCIPAL_ROLE:ALL
+    fs.native-s3.enabled=true
+    s3.endpoint=http://192.168.1.203:8080
+    s3.region=us-east-1
+    s3.path-style-access=true
+    s3.aws-access-key=${ENV:AWS_ACCESS_KEY_ID}
+    s3.aws-secret-key=${ENV:AWS_SECRET_ACCESS_KEY}
+  tpch: |
+    connector.name=tpch

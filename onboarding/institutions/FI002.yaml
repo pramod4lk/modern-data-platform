@@ -1,0 +1,23 @@
+# Milestone 6 test: FI002 is onboarded with this file only - no code changes.
+institution_id: FI002
+institution_name: Synthetic Commercial Bank 02
+status: uat
+supervising_department: prudential-supervision
+peer_group: PG-CB
+
+returns:
+  - return_type: LCR
+    contract: lcr-monthly.v1
+    channel: api
+    first_period: 2026-09
+
+streams: []
+
+credentials:
+  sftp_account: null
+  client_certificate: fi002
+  kafka_user: null
+
+contacts:
+  data_submission: submissions@fi002.example
+  escalation: compliance@fi002.example

@@ -1,0 +1,15 @@
+# Copied to profiles.yml in the Airflow image (images/airflow/Dockerfile). Contains no secrets.
+# Local use: cp profiles.yml.example profiles.yml  (profiles.yml is git-ignored)
+poc_lakehouse:
+  target: poc
+  outputs:
+    poc:
+      type: trino
+      method: none                         # POC Trino has no authentication
+      user: "{{ env_var('DBT_TRINO_USER', 'dbt') }}"
+      host: "{{ env_var('DBT_TRINO_HOST', 'trino.lakehouse.svc.cluster.local') }}"
+      port: "{{ env_var('DBT_TRINO_PORT', '8080') | int }}"
+      http_scheme: http
+      catalog: iceberg
+      schema: silver
+      threads: 2

@@ -1,0 +1,21 @@
+# App of apps: Argo CD watches platform/apps/ and creates one Application per file.
+# Replace repoURL with your Git repository URL.
+# Child applications use MANUAL sync on purpose: deploy each component when its milestone starts.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<your-account>/data-platform-poc.git
+    targetRevision: main
+    path: platform/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

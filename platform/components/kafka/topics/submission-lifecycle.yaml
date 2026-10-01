@@ -1,0 +1,12 @@
+# Submission lifecycle events: received, validated, rejected, accepted, published.
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: submissions.lifecycle.v1
+  namespace: streaming
+  labels: { strimzi.io/cluster: poc-kafka }
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 2592000000       # 30 days

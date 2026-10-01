@@ -1,0 +1,14 @@
+# Buckets for the POC. create-buckets.sh reads this file.
+buckets:
+  - name: raw
+    purpose: Exact submissions as received (legal copy)
+    object_lock: true          # must be set at creation; cannot be added later
+    versioning: true
+  - name: lakehouse
+    purpose: Iceberg tables (bronze, silver, gold, ops)
+    object_lock: false
+    versioning: false
+  - name: archive
+    purpose: Cold copies and expired snapshots
+    object_lock: true
+    versioning: true

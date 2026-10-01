@@ -1,0 +1,24 @@
+# Onboarding by configuration: copy this file to <INSTITUTION_ID>.yaml and open a pull request.
+# Nothing here is secret: credentials are referenced by name, issued outside Git.
+institution_id: FI0XX
+institution_name: Synthetic Bank XX
+status: onboarding            # onboarding | uat | live | suspended
+supervising_department: prudential-supervision
+peer_group: PG-CB
+
+returns:                       # must exist in data/reference/code-lists/return-types.csv
+  - return_type: LCR
+    contract: lcr-monthly.v1
+    channel: sftp              # sftp | api
+    first_period: 2026-09
+
+streams: []                    # e.g. [{ topic: payments.events.v1, key: FI0XX }]
+
+credentials:
+  sftp_account: fi0xx-sftp     # created by the platform team
+  client_certificate: fi0xx    # issued by the PKI sub-CA for institutions
+  kafka_user: null
+
+contacts:
+  data_submission: submissions@fi0xx.example     # synthetic
+  escalation: compliance@fi0xx.example

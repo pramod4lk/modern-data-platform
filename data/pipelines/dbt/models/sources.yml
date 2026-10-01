@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: iceberg
+    schema: bronze
+    tables:
+      - name: lcr_monthly
+        description: Parsed LCR submissions, append-only, all versions (loaded by raw_to_bronze.py)
+  - name: ops
+    database: iceberg
+    schema: ops
+    tables:
+      - name: dq_results
+        description: Quality rule results, one row per rule per run
+  - name: reference
+    database: iceberg
+    schema: reference
+    tables:
+      - name: institutions
+      - name: lcr_line_codes

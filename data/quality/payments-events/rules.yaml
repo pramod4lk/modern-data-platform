@@ -1,0 +1,7 @@
+contract: payments-events
+version: 1.0.0
+rules:
+  - { id: PAY-001, stage: bronze, dimension: completeness, type: not_null, columns: [event_id, institution_id, event_time, amount], severity: blocking }
+  - { id: PAY-002, stage: bronze, dimension: validity, type: range, column: amount, min: 0, severity: blocking }
+  - { id: PAY-003, stage: bronze, dimension: uniqueness, type: unique, columns: [event_id], severity: warning }
+  - { id: PAY-004, stage: bronze, dimension: validity, type: accepted_values, column: status, values: [SETTLED, PENDING, FAILED], severity: blocking }

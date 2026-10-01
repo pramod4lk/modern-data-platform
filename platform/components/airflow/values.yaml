@@ -1,0 +1,38 @@
+# Apache Airflow (official chart). Keys differ between chart majors: check `helm show values` before syncing.
+# Metadata DB: shared PostgreSQL (Secret "airflow-metadata", key "connection").
+executor: KubernetesExecutor
+postgresql:
+  enabled: false
+redis:
+  enabled: false
+data:
+  metadataSecretName: airflow-metadata
+nodeSelector:
+  poc/role: services
+dags:
+  gitSync:
+    enabled: true
+    repo: https://github.com/<your-account>/data-platform-poc.git
+    branch: main
+    subPath: data/orchestration/airflow/dags
+    # Private repo: create Secret "airflow-git" (GIT_SYNC_USERNAME / GIT_SYNC_PASSWORD) and set:
+    # credentialsSecret: airflow-git
+scheduler:
+  resources:
+    requests: { cpu: 200m, memory: 512Mi }
+    limits: { memory: 1Gi }
+triggerer:
+  resources:
+    requests: { cpu: 50m, memory: 256Mi }
+    limits: { memory: 512Mi }
+logs:
+  persistence:
+    enabled: false
+env:
+  - name: AIRFLOW__CORE__LOAD_EXAMPLES
+    value: "False"
+# Custom image with providers (cncf.kubernetes, trino, openlineage): images/airflow/Dockerfile
+# images:
+#   airflow:
+#     repository: <registry>/poc-airflow
+#     tag: 0.1.0

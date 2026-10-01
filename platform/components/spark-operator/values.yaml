@@ -1,0 +1,14 @@
+# Kubeflow Spark Operator. Spark applications run in the lakehouse namespace on the compute node.
+spark:
+  jobNamespaces:
+    - lakehouse
+controller:
+  nodeSelector:
+    poc/role: compute
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 512Mi }
+webhook:
+  enable: true
+  nodeSelector:
+    poc/role: compute
