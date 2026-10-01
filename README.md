@@ -1,4 +1,4 @@
-# data-platform-poc
+# modern-data-platform-poc
 
 A local proof of concept (POC) of the central bank's modern data platform: an open-standard **lakehouse** (Apache Iceberg on Ceph object storage), fed by **Kafka**, processed by **Spark and Flink**, orchestrated by **Airflow**, queried through **Trino**, and governed through **OpenMetadata** and **Keycloak**, all running on **Kubernetes (k3s)** across VMs on two laptops.
 
