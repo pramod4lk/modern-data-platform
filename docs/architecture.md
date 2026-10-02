@@ -1,6 +1,6 @@
 # Architecture and POC scope
 
-This POC implements a small, working slice of the **Central Bank Modern Data Platform — Target-State Enterprise Architecture** (the full architecture document is maintained separately; add its link here).
+This POC is a **learning lab**: its purpose is to learn every technology and concept in the target design by building a small, working version of it on two laptops (16 GB Linux, 32 GB Windows). It implements a slice of the **Central Bank Modern Data Platform — Target-State Enterprise Architecture** (the full architecture document is maintained separately; add its link here).
 
 ## Target design in one paragraph
 
@@ -15,6 +15,10 @@ One governed, open-standard lakehouse: Apache Iceberg tables on S3-compatible ob
 | Silver | Validated, conformed, identifiers tokenised | `lakehouse.silver.*` |
 | Gold | Certified data products | `lakehouse.gold.*` |
 | Archive | Cold copies | `s3://archive/` |
+
+## Learning goals
+
+See [`learning-path.md`](learning-path.md) for the concepts and exercises per milestone, and [`memory-budget.md`](memory-budget.md) for how the components fit in the available RAM.
 
 ## In scope for the POC
 

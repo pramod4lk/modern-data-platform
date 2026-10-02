@@ -82,6 +82,6 @@ After all three installs finish, eject the ISO (check the device name first):
   sudo virsh change-media k3s-server sda --eject --config
   (repeat for k3s-worker-1 and ceph-1)
 
-After deploying Ceph, cap OSD memory at 1 GB:
-  ceph config set osd osd_memory_target 1073741824
+After deploying Ceph, cap OSD memory at 768 MB (ceph-1 has only 3 GB):
+  ceph config set osd osd_memory_target 805306368
 EOF

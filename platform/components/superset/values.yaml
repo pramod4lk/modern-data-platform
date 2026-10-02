@@ -27,6 +27,6 @@ init:
 supersetWorker:
   replicaCount: 1
   resources:
-    requests: { cpu: 100m, memory: 512Mi }
-    limits: { memory: 1Gi }
+    requests: { cpu: 100m, memory: 384Mi }
+    limits: { memory: 768Mi }
 # Trino connection string to add in the UI:  trino://superset@trino.lakehouse.svc.cluster.local:8080/iceberg

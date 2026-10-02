@@ -1,25 +1,24 @@
-# Trino: 1 coordinator + 1 worker on the compute node.
+# Trino as a single node (coordinator also runs queries) on k3s-worker-2.
+# Why: k3s-worker-1 (6 GB, on the 16 GB Linux laptop) is reserved for Spark.
+# Target design: separate coordinator and worker pools per workload class.
 server:
-  workers: 1
+  workers: 0
   config:
     query:
-      maxMemory: "2GB"
+      maxMemory: "1GB"
+additionalConfigProperties:
+  - node-scheduler.include-coordinator=true
 coordinator:
   jvm:
-    maxHeapSize: "1536M"
+    maxHeapSize: "2G"
+  config:
+    query:
+      maxMemoryPerNode: "1GB"
   resources:
-    requests: { cpu: 500m, memory: 2Gi }
-    limits: { memory: 2Gi }
+    requests: { cpu: 500m, memory: 2560Mi }
+    limits: { memory: 2560Mi }
   nodeSelector:
-    poc/role: compute
-worker:
-  jvm:
-    maxHeapSize: "2560M"
-  resources:
-    requests: { cpu: 1, memory: 3Gi }
-    limits: { memory: 3Gi }
-  nodeSelector:
-    poc/role: compute
+    poc/role: services
 envFrom:
   - secretRef: { name: s3-credentials }        # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
   - secretRef: { name: polaris-engine }        # POLARIS_CLIENT_ID / POLARIS_CLIENT_SECRET

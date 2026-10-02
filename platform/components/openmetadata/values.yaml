@@ -23,6 +23,9 @@ openmetadata:
       enabled: true          # receive lineage from Spark, Airflow, dbt
 nodeSelector:
   poc/role: services
+extraEnvs:
+  - name: OPENMETADATA_HEAP_OPTS
+    value: "-Xmx1G -Xms1G"
 resources:
-  requests: { cpu: 300m, memory: 1536Mi }
-  limits: { memory: 2Gi }
+  requests: { cpu: 300m, memory: 1280Mi }
+  limits: { memory: 1536Mi }

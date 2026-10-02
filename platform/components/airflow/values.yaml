@@ -25,6 +25,19 @@ triggerer:
   resources:
     requests: { cpu: 50m, memory: 256Mi }
     limits: { memory: 512Mi }
+dagProcessor:
+  resources:
+    requests: { cpu: 50m, memory: 256Mi }
+    limits: { memory: 512Mi }
+# Chart 1.16+/Airflow 3 uses apiServer; older charts use webserver. Only the matching block is used.
+apiServer:
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }
+webserver:
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }
 logs:
   persistence:
     enabled: false

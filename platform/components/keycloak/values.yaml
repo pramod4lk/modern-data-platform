@@ -21,7 +21,7 @@ extraEnv: |
   - name: JAVA_OPTS_APPEND
     value: "-Xms256m -Xmx512m"
 nodeSelector:
-  kubernetes.io/hostname: k3s-server
+  poc/role: services            # moved off k3s-server (3 GB VM) to fit the 16 GB Linux host
 resources:
   requests: { cpu: 100m, memory: 512Mi }
   limits: { memory: 768Mi }

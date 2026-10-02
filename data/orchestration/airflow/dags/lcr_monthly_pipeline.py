@@ -39,7 +39,7 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule=None,
     catchup=False,
-    max_active_runs=3,
+    max_active_runs=1,          # one Spark job at a time on the 6 GB compute VM
     default_args=DEFAULT_ARGS,
     tags=["lcr", "batch", "tier-1"],
     params={

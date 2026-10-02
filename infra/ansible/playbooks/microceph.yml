@@ -22,7 +22,7 @@
       loop:
         - ceph config set global mon_allow_pool_size_one true
         - ceph config set global osd_pool_default_size 1
-        - ceph config set osd osd_memory_target 1073741824
+        - ceph config set osd osd_memory_target 805306368
       changed_when: false
 
     - name: Add data disks

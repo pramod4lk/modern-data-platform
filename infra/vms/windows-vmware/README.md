@@ -14,7 +14,7 @@
 1. File → New Virtual Machine → **Typical** → installer disc image: Ubuntu Server ISO (same version as the Linux VMs).
 2. Name: `k3s-worker-2`. Disk: **150 GB**, single file.
 3. **Customize Hardware:**
-   - Memory: **24 GB**
+   - Memory: **24 GB** (this VM carries most services because the Linux laptop has only 16 GB; see `docs/memory-budget.md`)
    - Processors: **6** (keep at least 2 physical cores free for Windows)
    - Network Adapter: **Custom → VMnet0 (Bridged)**
    - Remove: sound card, printer, USB controller (not needed)

@@ -1,5 +1,6 @@
 # Single source of truth for the POC VMs.
 # This file is also an Ansible inventory:  ansible-inventory -i infra/inventory/hosts.yaml --graph
+# Hosts: Linux laptop 16 GB (k3s-server 3 + k3s-worker-1 6 + ceph-1 3 GB), Windows laptop 32 GB (k3s-worker-2 24 GB).
 # Replace the example IPs with addresses on your router's subnet, outside the DHCP range.
 all:
   vars:

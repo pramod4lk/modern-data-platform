@@ -1,8 +1,10 @@
-# modern-data-platform-poc
+# data-platform-poc
 
 A local proof of concept (POC) of the central bank's modern data platform: an open-standard **lakehouse** (Apache Iceberg on Ceph object storage), fed by **Kafka**, processed by **Spark and Flink**, orchestrated by **Airflow**, queried through **Trino**, and governed through **OpenMetadata** and **Keycloak**, all running on **Kubernetes (k3s)** across VMs on two laptops.
 
-The POC proves **how the components fit together and how data flows** end to end. It does not test performance, high availability or production security; those are covered by the Phase 0 PoC on real servers.
+This is a **learning lab**. Its purpose is to learn every technology and concept in the target architecture — infrastructure as code, Kubernetes, object storage, open table formats, batch and streaming processing, data contracts, data quality, orchestration, GitOps, identity, access policy, catalog and lineage — by building a small, working version of it. Each milestone comes with concepts and hands-on exercises in [`docs/learning-path.md`](docs/learning-path.md).
+
+It also shows **how the components fit together and how data flows** end to end. It does not test performance, high availability or production security; those belong to the Phase 0 PoC on real servers.
 
 > **Rules for this repository**
 > - **Synthetic data only.** Never commit or load real bank, institution or customer data, even though the repository is private.
@@ -18,6 +20,7 @@ The POC proves **how the components fit together and how data flows** end to end
 - [Quick start](#quick-start)
 - [Milestones](#milestones)
 - [Component placement](#component-placement)
+- [Memory budget and run profiles](#memory-budget-and-run-profiles)
 - [Repository structure](#repository-structure)
 - [Working conventions](#working-conventions)
 - [Troubleshooting](#troubleshooting)
@@ -54,12 +57,14 @@ Two laptops (Linux and Windows) connected to a gigabit switch that is cabled to 
 
 | VM | Host | vCPU | RAM | Disk | IP (example) | Role |
 | --- | --- | --- | --- | --- | --- | --- |
-| `k3s-server` | Linux (KVM) | 2 | 3 GB | 30 GB | 192.168.1.201 | k3s control plane + light services |
-| `k3s-worker-1` | Linux (KVM) | 4 | 6 GB | 60 GB | 192.168.1.202 | Compute: Spark, Trino |
+| `k3s-server` | Linux (KVM) | 2 | 3 GB | 30 GB | 192.168.1.201 | k3s control plane, PostgreSQL, Polaris |
+| `k3s-worker-1` | Linux (KVM) | 4 | 6 GB | 60 GB | 192.168.1.202 | Compute: Spark jobs only |
 | `ceph-1` | Linux (KVM) | 2 | 3 GB | 20 GB OS + 2 × 40 GB data | 192.168.1.203 | MicroCeph S3 storage (not in k3s) |
-| `k3s-worker-2` | Windows (VMware) | 6 | 24 GB | 150 GB | 192.168.1.204 | Services: Kafka, Flink, Airflow, Superset, OpenMetadata |
+| `k3s-worker-2` | Windows (VMware) | 6 | 24 GB | 150 GB | 192.168.1.204 | Services: Trino, Keycloak, Kafka, Flink, Airflow, Superset, OpenMetadata, Argo CD, monitoring |
 
-The Linux VM sizes come from `infra/vms/linux-kvm/create-poc-vms.sh`, which is sized for a 16 GB host. **With 32 GB on the Linux laptop, consider raising them** to about 6 GB (server), 14 GB (worker 1) and 6 GB (Ceph). Replace the example IPs with addresses on your router's subnet, outside its DHCP range, and keep them in sync with `infra/inventory/hosts.yaml`.
+**Host RAM:** Linux laptop **16 GB** (the three VMs get 12 GB, ~4 GB stays with the host), Windows laptop **32 GB** (the VM gets 24 GB, ~8 GB stays with Windows). The Linux VM sizes are set in `infra/vms/linux-kvm/create-poc-vms.sh`. Because the Linux VMs are small, most services run on `k3s-worker-2`; see [ADR-0004](docs/adr/0004-placement-for-16gb-linux-host.md) and [Memory budget and run profiles](#memory-budget-and-run-profiles).
+
+Replace the example IPs with addresses on your router's subnet, outside its DHCP range, and keep them in sync with `infra/inventory/hosts.yaml`.
 
 ---
 
@@ -188,7 +193,7 @@ kubectl label node k3s-worker-2 poc/role=services
 See [`docs/runbooks/03-microceph-s3.md`](docs/runbooks/03-microceph-s3.md). After Ceph is deployed, cap OSD memory to fit the small VM:
 
 ```bash
-sudo ceph config set osd osd_memory_target 1073741824
+sudo ceph config set osd osd_memory_target 805306368     # 768 MB: ceph-1 has 3 GB
 ```
 
 Then create the `raw`, `lakehouse` and `archive` buckets defined in `infra/storage/buckets.yaml` (`make buckets`).
@@ -206,11 +211,11 @@ Chart versions are set to the latest (`"*"`) and some chart keys change between 
 
 ## Milestones
 
-Each milestone must work before starting the next. Details and success criteria: [`docs/milestones.md`](docs/milestones.md).
+Each milestone must work before starting the next. Details and success criteria: [`docs/milestones.md`](docs/milestones.md). Concepts and exercises: [`docs/learning-path.md`](docs/learning-path.md).
 
 - [ ] **M1 — Foundation:** VMs, k3s cluster (3 nodes Ready), MicroCeph with S3 buckets.
 - [ ] **M2 — Lakehouse core:** PostgreSQL, Polaris (Iceberg REST catalog), Trino, Spark. One Iceberg table written by Spark and queried by Trino.
-- [ ] **M3 — Batch pipeline:** a synthetic monthly liquidity return from one institution flows Raw → Bronze → Silver → Gold, orchestrated by Airflow, with Great Expectations quality checks.
+- [ ] **M3 — Batch pipeline:** a synthetic monthly liquidity return from one institution flows Raw → Bronze → Silver → Gold, orchestrated by Airflow, with quality rules as code and quarantine of failing submissions.
 - [ ] **M4 — Streaming:** Strimzi Kafka + Flink (or Spark Structured Streaming) writing payment events into an Iceberg table.
 - [ ] **M5 — Serving and governance:** Superset dashboards on Trino, Keycloak SSO, OpenMetadata catalog and lineage; stretch goal: Ranger column masking in Trino.
 - [ ] **M6 — Proof tests:** corrected resubmission creates a new version; time-travel rollback; pod failure recovery; onboarding a second institution by configuration only.
@@ -221,12 +226,32 @@ Each milestone must work before starting the next. Details and success criteria:
 
 ## Component placement
 
-| Node | Components |
-| --- | --- |
-| `k3s-server` | k3s control plane, PostgreSQL, Keycloak, Polaris, Apicurio schema registry |
-| `k3s-worker-1` (`poc/role=compute`) | Spark jobs, Trino, dbt, Great Expectations |
-| `k3s-worker-2` (`poc/role=services`) | Kafka (Strimzi), Flink, Airflow, Superset, OpenMetadata, NiFi (optional) |
-| `ceph-1` (outside k3s) | MicroCeph S3 storage |
+| Node | Memory | Components |
+| --- | --- | --- |
+| `k3s-server` | 3 GB | k3s control plane, PostgreSQL (CloudNativePG), Polaris |
+| `k3s-worker-1` (`poc/role=compute`) | 6 GB | Spark Operator and Spark jobs (one job at a time) |
+| `k3s-worker-2` (`poc/role=services`) | 24 GB | Trino (single node), Keycloak, Apicurio, Kafka (Strimzi), Flink, Airflow, Superset, OpenMetadata + OpenSearch, Argo CD, Prometheus + Grafana |
+| `ceph-1` (outside k3s) | 3 GB | MicroCeph S3 storage (2 OSDs at 768 MB each) |
+
+## Memory budget and run profiles
+
+If every component runs at once, `k3s-worker-2` uses about 22 of its 24 GB. To keep headroom, run only what the current milestone needs:
+
+| Profile | Milestones | Runs |
+| --- | --- | --- |
+| core | M1–M2 | PostgreSQL, Polaris, Trino, Spark, Argo CD, Keycloak, Apicurio |
+| batch | M3 | core + Airflow |
+| streaming | M4 | core + Kafka + Flink |
+| serve-govern | M5 | core + Airflow + Superset + OpenMetadata |
+| full | M6 demo | everything |
+
+```bash
+make pause NS=governance     # free memory (bi | governance | orchestration | monitoring)
+make resume NS=governance
+make mem                     # node and pod memory use
+```
+
+Full per-node budget: [`docs/memory-budget.md`](docs/memory-budget.md).
 
 ---
 
@@ -238,19 +263,22 @@ data-platform-poc/
 ├── .gitignore                         # kubeconfig, .env, keys, secrets, local data, ISOs
 ├── .editorconfig
 ├── .pre-commit-config.yaml            # yamllint, ruff, shellcheck, gitleaks
-├── Makefile                           # make vms | base-os | k3s | ceph | buckets | argocd | smoke ...
+├── Makefile                           # make vms | base-os | k3s | ceph | buckets | argocd | pause | mem ...
 │
 ├── .github/workflows/
 │   └── lint.yml                       # pre-commit, kubeconform, dbt parse, Python syntax
 │
 ├── docs/
 │   ├── architecture.md                # Link to the architecture document + POC scope
-│   ├── milestones.md                  # 6 milestones with checklists and success criteria
+│   ├── milestones.md                  # 6 milestones with checklists, success criteria, run profiles
+│   ├── learning-path.md               # Concepts and hands-on exercises per milestone
+│   ├── memory-budget.md               # Per-node memory budget and run profiles
 │   ├── adr/                           # Architecture Decision Records
 │   │   ├── 0000-template.md
 │   │   ├── 0001-iceberg-table-format.md
 │   │   ├── 0002-polaris-catalog.md
-│   │   └── 0003-k3s-for-poc.md
+│   │   ├── 0003-k3s-for-poc.md
+│   │   └── 0004-placement-for-16gb-linux-host.md
 │   └── runbooks/
 │       ├── 01-network-and-vms.md
 │       ├── 02-k3s-install.md
@@ -292,7 +320,7 @@ data-platform-poc/
 │   │   ├── keycloak/                  # values.yaml, realm-poc.json
 │   │   ├── polaris/                   # values.yaml, create-catalog.json
 │   │   ├── apicurio/                  # Deployment + Service
-│   │   ├── trino/                     # values.yaml, catalogs/iceberg.properties
+│   │   ├── trino/                     # single-node values.yaml, catalogs/iceberg.properties
 │   │   ├── spark-operator/            # values.yaml, example SparkApplication
 │   │   ├── kafka/                     # operator values, KRaft cluster, topics/
 │   │   ├── flink-operator/
@@ -329,6 +357,7 @@ data-platform-poc/
 │   ├── quality/                       # Rules as code per contract (results -> ops.dq_results)
 │   ├── orchestration/airflow/dags/
 │   │   ├── lcr_monthly_pipeline.py    # validate -> bronze -> dbt -> publish
+│   │   ├── reference_daily.py         # scheduled daily Spark job (02:00 MYT)
 │   │   └── spark-apps/                # SparkApplication templates rendered per run
 │   └── dashboards/superset/           # Exported dashboards (README explains how)
 │
@@ -377,6 +406,8 @@ data-platform-poc/
 | Worker never becomes `Ready` | Ports blocked or wrong `--node-ip` | Allow 6443/tcp, 10250/tcp, 8472/udp between VMs; check the IP |
 | Windows VM slow or host out of memory | Docker Desktop/WSL2 using RAM | Quit Docker Desktop or cap WSL2 memory |
 | Nodes drop out overnight | Laptop went to sleep | Disable sleep on AC power; lid close = do nothing |
+| Pods `OOMKilled` or `Pending` | Not enough memory on the node | `make mem`; pause unused namespaces (`make pause NS=...`) |
+| Ceph OSD restarts on `ceph-1` | OSD out of memory | Lower `osd_memory_target` to 640 MB (`docs/memory-budget.md`) |
 
 ---
 

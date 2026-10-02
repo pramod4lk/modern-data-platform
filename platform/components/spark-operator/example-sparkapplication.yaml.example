@@ -22,9 +22,9 @@ spec:
       - secretRef: { name: s3-credentials }
       - secretRef: { name: polaris-engine }
   executor:
-    instances: 2
+    instances: 1
     cores: 1
-    memory: 1500m
+    memory: 1200m          # driver 1g + executor 1.2g (+ overhead) fit the 6 GB compute VM
     nodeSelector: { poc/role: compute }
     envFrom:
       - secretRef: { name: s3-credentials }

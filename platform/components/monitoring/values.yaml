@@ -3,10 +3,10 @@ alertmanager:
   enabled: false
 prometheus:
   prometheusSpec:
-    retention: 3d
+    retention: 2d
     resources:
       requests: { cpu: 200m, memory: 512Mi }
-      limits: { memory: 1536Mi }
+      limits: { memory: 1Gi }
     nodeSelector:
       poc/role: services
     serviceMonitorSelectorNilUsesHelmValues: false

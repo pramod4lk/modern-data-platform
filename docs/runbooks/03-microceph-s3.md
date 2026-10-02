@@ -12,7 +12,7 @@ sudo microceph disk add /dev/vdb --wipe
 sudo microceph disk add /dev/vdc --wipe
 sudo ceph config set global osd_pool_default_size 1      # single node only
 sudo ceph config set global mon_allow_pool_size_one true
-sudo ceph config set osd osd_memory_target 1073741824     # 1 GB per OSD
+sudo ceph config set osd osd_memory_target 805306368     # 768 MB per OSD (ceph-1 has 3 GB)
 sudo microceph enable rgw --port 8080
 sudo ceph -s
 ```

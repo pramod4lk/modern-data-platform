@@ -4,7 +4,7 @@
 - **Date:** 2026-10-01
 
 ## Context
-The POC runs on two 32 GB laptops. The target platform will use a supported distribution (OpenShift or Rancher RKE2), which is too heavy for laptops.
+The POC is a learning lab on two laptops: a 16 GB Linux laptop and a 32 GB Windows laptop. The target platform will use a supported distribution (OpenShift or Rancher RKE2), which is too heavy for laptops.
 
 ## Options considered
 1. **k3s** — lightweight, single binary, CNCF-certified Kubernetes; same Helm charts.

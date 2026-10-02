@@ -16,11 +16,11 @@ spec:
       kubernetes.io/hostname: k3s-server
   resources:
     requests: { cpu: 100m, memory: 256Mi }
-    limits: { memory: 768Mi }
+    limits: { memory: 512Mi }          # k3s-server has 3 GB in total
   postgresql:
     parameters:
-      shared_buffers: 128MB
-      max_connections: "200"
+      shared_buffers: 64MB
+      max_connections: "100"
   managed:
     roles:
       - { name: polaris,      ensure: present, login: true, passwordSecret: { name: pg-polaris } }

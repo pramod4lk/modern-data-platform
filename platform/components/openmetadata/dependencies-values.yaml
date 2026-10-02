@@ -7,10 +7,10 @@ airflow:
 opensearch:
   enabled: true
   singleNode: true
-  opensearchJavaOpts: "-Xms1g -Xmx1g"
+  opensearchJavaOpts: "-Xms768m -Xmx768m"
   resources:
-    requests: { cpu: 250m, memory: 2Gi }
-    limits: { memory: 2560Mi }
+    requests: { cpu: 250m, memory: 1536Mi }
+    limits: { memory: 1792Mi }
   nodeSelector:
     poc/role: services
   persistence:

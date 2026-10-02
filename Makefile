@@ -2,7 +2,7 @@
 ANSIBLE_INV := infra/inventory/hosts.yaml
 PLAYBOOKS   := infra/ansible/playbooks
 
-.PHONY: help vms base-os k3s ceph buckets argocd root-app generate-lcr smoke lint
+.PHONY: help vms base-os k3s ceph buckets argocd root-app generate-lcr smoke lint pause resume mem
 
 help:            ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-14s %s\n",$$1,$$2}'
@@ -41,3 +41,20 @@ smoke:           ## Run smoke tests
 
 lint:            ## Run all pre-commit hooks
 	pre-commit run --all-files
+
+PAUSABLE := bi governance orchestration monitoring
+
+pause:           ## Free memory: scale a namespace to 0 (NS=bi|governance|orchestration|monitoring)
+	@echo "$(PAUSABLE)" | grep -qw "$(NS)" || { echo "NS must be one of: $(PAUSABLE)"; exit 1; }
+	kubectl -n $(NS) scale deploy,statefulset --all --replicas=0
+# Streaming: Strimzi would undo a manual scale. Pause reconciliation first:
+#   kubectl -n streaming annotate kafka poc-kafka strimzi.io/pause-reconciliation=true
+#   kubectl -n streaming patch flinkdeployment payments-stream --type merge -p '{"spec":{"job":{"state":"suspended"}}}'
+
+resume:          ## Scale a paused namespace back to 1 replica
+	@echo "$(PAUSABLE)" | grep -qw "$(NS)" || { echo "NS must be one of: $(PAUSABLE)"; exit 1; }
+	kubectl -n $(NS) scale deploy,statefulset --all --replicas=1
+
+mem:             ## Show node and top pod memory use
+	kubectl top nodes
+	kubectl top pods -A --sort-by=memory | head -20

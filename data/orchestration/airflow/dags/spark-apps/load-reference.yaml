@@ -1,20 +1,15 @@
-# Rendered by Airflow (Jinja) for each run. Image: images/spark/Dockerfile.
+# Rendered by Airflow for each run of reference_daily. Image: images/spark/Dockerfile.
 apiVersion: sparkoperator.k8s.io/v1beta2
 kind: SparkApplication
 metadata:
-  name: validate-structure-{{ params.submission_id | lower }}-{{ ts_nodash | lower }}
+  name: load-reference-{{ ts_nodash | lower }}
   namespace: lakehouse
 spec:
   type: Python
   mode: cluster
   image: <registry>/poc-spark:0.1.0
   imagePullPolicy: IfNotPresent
-  mainApplicationFile: local:///opt/poc/pipelines/spark/validate_structure.py
-  arguments:
-    - --raw-key
-    - "{{ params.raw_key }}"
-    - --submission-id
-    - "{{ params.submission_id }}"
+  mainApplicationFile: local:///opt/poc/pipelines/spark/load_reference.py
   sparkVersion: "3.5.6"
   restartPolicy:
     type: Never
